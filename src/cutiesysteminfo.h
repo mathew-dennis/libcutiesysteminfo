@@ -4,9 +4,9 @@
 #include <QString>
 
 // ============================================================
-// OS Information Object
+// OS Information Object (Internal)
 // ============================================================
-class OSInfo : public QObject {
+class CutieOSInfo : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString osName READ osName CONSTANT)
     Q_PROPERTY(QString build READ build CONSTANT)
@@ -14,7 +14,7 @@ class OSInfo : public QObject {
     Q_PROPERTY(QString channel READ channel CONSTANT)
 
 public:
-    explicit OSInfo(QObject *parent = nullptr);
+    explicit CutieOSInfo(QObject *parent = nullptr);
 
     QString osName() const { return m_osName; }
     QString build() const { return m_build; }
@@ -33,9 +33,9 @@ private:
 };
 
 // ============================================================
-// Hardware Information Object
+// Hardware Information Object (Internal)
 // ============================================================
-class HardwareInfo : public QObject {
+class CutieHardwareInfo : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString device READ device CONSTANT)
     Q_PROPERTY(QString processor READ processor CONSTANT)
@@ -45,7 +45,7 @@ class HardwareInfo : public QObject {
     Q_PROPERTY(QString battery READ battery CONSTANT)
 
 public:
-    explicit HardwareInfo(QObject *parent = nullptr);
+    explicit CutieHardwareInfo(QObject *parent = nullptr);
 
     QString device() const { return m_device; }
     QString processor() const { return m_processor; }
@@ -74,21 +74,21 @@ private:
 };
 
 // ============================================================
-// Main System Info Provider
+// Main System Info Provider (Exposed to QML)
 // ============================================================
-class SystemInfo : public QObject {
+class CutieSystemInfo : public QObject {
     Q_OBJECT
-    Q_PROPERTY(OSInfo *osInfo READ getOSInfo CONSTANT)
-    Q_PROPERTY(HardwareInfo *hwInfo READ getHWInfo CONSTANT)
+    Q_PROPERTY(CutieOSInfo *osInfo READ getOSInfo CONSTANT)
+    Q_PROPERTY(CutieHardwareInfo *hwInfo READ getHWInfo CONSTANT)
 
 public:
-    explicit SystemInfo(QObject *parent = nullptr);
-    ~SystemInfo();
+    explicit CutieSystemInfo(QObject *parent = nullptr);
+    ~CutieSystemInfo();
 
-    OSInfo *getOSInfo() const { return m_osInfo; }
-    HardwareInfo *getHWInfo() const { return m_hwInfo; }
+    CutieOSInfo *getOSInfo() const { return m_osInfo; }
+    CutieHardwareInfo *getHWInfo() const { return m_hwInfo; }
 
 private:
-    OSInfo *m_osInfo;
-    HardwareInfo *m_hwInfo;
+    CutieOSInfo *m_osInfo;
+    CutieHardwareInfo *m_hwInfo;
 };

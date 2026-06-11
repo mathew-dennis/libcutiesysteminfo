@@ -4,7 +4,6 @@ project(cutiesysteminfo VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Quick)
-pkg_check_modules(LIBPULSE libpulse REQUIRED IMPORTED_TARGET)
 qt_standard_project_setup()
 
 set(lib_SOURCES
@@ -19,7 +18,7 @@ qt6_add_library(cutiesysteminfo
 )
 
 qt6_add_qml_module(qmlcutiesysteminfoplugin
-    URI Cutie.Volume
+    URI Cutie.SystemInfo
     VERSION ${PROJECT_VERSION}
     PLUGIN_TARGET qmlcutiesysteminfoplugin
     NO_GENERATE_PLUGIN_SOURCE
@@ -34,7 +33,6 @@ set_target_properties(cutiesysteminfo PROPERTIES PUBLIC_HEADER src/cutiesystemin
 target_link_libraries(cutiesysteminfo PUBLIC
     Qt::Core
     Qt::Quick
-    PkgConfig::LIBPULSE
 )
 
 target_link_libraries(qmlcutiesysteminfoplugin PUBLIC
@@ -51,7 +49,7 @@ install(TARGETS cutiesysteminfo
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
-install(FILES ${CMAKE_BINARY_DIR}/cutisysteminfo.pc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
+install(FILES ${CMAKE_BINARY_DIR}/cutiesysteminfo.pc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
 
 install(TARGETS qmlcutiesysteminfoplugin
     RUNTIME DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie/SystemInfo"

@@ -7,10 +7,10 @@
 #include <QStorageInfo>
 
 // ============================================================
-// OSInfo Implementation
+// CutieOSInfo Implementation
 // ============================================================
 
-OSInfo::OSInfo(QObject *parent)
+CutieOSInfo::CutieOSInfo(QObject *parent)
     : QObject(parent) {
     m_osName = getOSName();
     m_kernel = executeCommand("uname -r");
@@ -18,18 +18,15 @@ OSInfo::OSInfo(QObject *parent)
     m_channel = readFile("/etc/lsb-release-codename").trimmed();
 }
 
-QString OSInfo::getOSName() {
-    // Try to read from /etc/os-release
+QString CutieOSInfo::getOSName() {
     QString osRelease = readFile("/etc/os-release");
     
-    // Parse NAME field
     for (const QString &line : osRelease.split('\n')) {
         if (line.startsWith("NAME=")) {
             return line.mid(6).remove('"');
         }
     }
     
-    // Fallback: try /etc/lsb-release
     QString lsbRelease = readFile("/etc/lsb-release");
     for (const QString &line : lsbRelease.split('\n')) {
         if (line.startsWith("DISTRIB_DESCRIPTION=")) {
@@ -40,7 +37,7 @@ QString OSInfo::getOSName() {
     return "Linux";
 }
 
-QString OSInfo::readFile(const QString &filePath) {
+QString CutieOSInfo::readFile(const QString &filePath) {
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return "Unknown";
@@ -51,7 +48,7 @@ QString OSInfo::readFile(const QString &filePath) {
     return content.trimmed();
 }
 
-QString OSInfo::executeCommand(const QString &command) {
+QString CutieOSInfo::executeCommand(const QString &command) {
     QProcess process;
     process.start("/bin/sh", QStringList() << "-c" << command);
 
@@ -63,10 +60,10 @@ QString OSInfo::executeCommand(const QString &command) {
 }
 
 // ============================================================
-// HardwareInfo Implementation
+// CutieHardwareInfo Implementation
 // ============================================================
 
-HardwareInfo::HardwareInfo(QObject *parent)
+CutieHardwareInfo::CutieHardwareInfo(QObject *parent)
     : QObject(parent) {
     m_device = getDeviceName();
     m_processor = getProcessorName();
@@ -76,12 +73,10 @@ HardwareInfo::HardwareInfo(QObject *parent)
     m_battery = getBatteryInfo();
 }
 
-QString HardwareInfo::getDeviceName() {
-    // Try to get device model from device tree
+QString CutieHardwareInfo::getDeviceName() {
     QString deviceName = executeCommand("cat /sys/firmware/devicetree/base/model 2>/dev/null");
     
     if (deviceName.isEmpty() || deviceName == "Unknown") {
-        // Fallback: try DMI data
         deviceName = executeCommand("cat /sys/class/dmi/id/product_name 2>/dev/null");
     }
     
@@ -92,19 +87,16 @@ QString HardwareInfo::getDeviceName() {
     return deviceName;
 }
 
-QString HardwareInfo::getProcessorName() {
-    // Try to get CPU model name from cpuinfo
+QString CutieHardwareInfo::getProcessorName() {
     QString cpuInfo = readFile("/proc/cpuinfo");
     
     for (const QString &line : cpuInfo.split('\n')) {
         if (line.startsWith("model name")) {
             QString modelName = line.split(':')[1].trimmed();
             
-            // Clean up the model name
             modelName = modelName.replace("(R)", "").replace("(TM)", "")
                                  .replace("CPU", "").replace("@", "").trimmed();
             
-            // Remove frequency info if present
             if (modelName.contains("GHz")) {
                 modelName = modelName.left(modelName.indexOf("GHz")).trimmed();
             }
@@ -116,13 +108,11 @@ QString HardwareInfo::getProcessorName() {
     return "Unknown";
 }
 
-QString HardwareInfo::getTotalMemory() {
-    // Read from /proc/meminfo
+QString CutieHardwareInfo::getTotalMemory() {
     QString memInfo = readFile("/proc/meminfo");
     
     for (const QString &line : memInfo.split('\n')) {
         if (line.startsWith("MemTotal:")) {
-            // Extract KB value and convert to GB
             QString kbStr = line.split(':')[1].trimmed().split(' ')[0];
             bool ok;
             long long kb = kbStr.toLongLong(&ok);
@@ -137,8 +127,7 @@ QString HardwareInfo::getTotalMemory() {
     return "Unknown";
 }
 
-QString HardwareInfo::getStorageInfo() {
-    // Get storage info for home directory
+QString CutieHardwareInfo::getStorageInfo() {
     QStorageInfo storage(QStandardPaths::writableLocation(QStandardPaths::HomeLocation));
     
     if (storage.isValid()) {
@@ -149,12 +138,10 @@ QString HardwareInfo::getStorageInfo() {
     return "Unknown";
 }
 
-QString HardwareInfo::getDisplayInfo() {
-    // Try to get display resolution from X11
+QString CutieHardwareInfo::getDisplayInfo() {
     QString displayInfo = executeCommand("xdpyinfo -display $DISPLAY 2>/dev/null | grep dimensions | awk '{print $2}'");
     
     if (displayInfo.isEmpty() || displayInfo == "Unknown") {
-        // Fallback: try wayland with wlr-randr
         displayInfo = executeCommand("wlr-randr 2>/dev/null | grep -i connected | head -1 | awk '{print $3}'");
     }
     
@@ -165,8 +152,7 @@ QString HardwareInfo::getDisplayInfo() {
     return displayInfo;
 }
 
-QString HardwareInfo::getBatteryInfo() {
-    // Try to read from power supply
+QString CutieHardwareInfo::getBatteryInfo() {
     QString batteryPath = "/sys/class/power_supply/BAT0/capacity";
     QString batteryStatus = readFile(batteryPath);
     
@@ -178,7 +164,6 @@ QString HardwareInfo::getBatteryInfo() {
         }
     }
     
-    // Try alternative path
     batteryPath = "/sys/class/power_supply/BAT1/capacity";
     batteryStatus = readFile(batteryPath);
     
@@ -193,7 +178,7 @@ QString HardwareInfo::getBatteryInfo() {
     return "N/A";
 }
 
-QString HardwareInfo::readFile(const QString &filePath) {
+QString CutieHardwareInfo::readFile(const QString &filePath) {
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return "Unknown";
@@ -204,7 +189,7 @@ QString HardwareInfo::readFile(const QString &filePath) {
     return content.trimmed();
 }
 
-QString HardwareInfo::executeCommand(const QString &command) {
+QString CutieHardwareInfo::executeCommand(const QString &command) {
     QProcess process;
     process.start("/bin/sh", QStringList() << "-c" << command);
 
@@ -216,14 +201,14 @@ QString HardwareInfo::executeCommand(const QString &command) {
 }
 
 // ============================================================
-// SystemInfo Implementation
+// CutieSystemInfo Implementation
 // ============================================================
 
-SystemInfo::SystemInfo(QObject *parent)
+CutieSystemInfo::CutieSystemInfo(QObject *parent)
     : QObject(parent) {
-    m_osInfo = new OSInfo(this);
-    m_hwInfo = new HardwareInfo(this);
+    m_osInfo = new CutieOSInfo(this);
+    m_hwInfo = new CutieHardwareInfo(this);
 }
 
-SystemInfo::~SystemInfo() {
+CutieSystemInfo::~CutieSystemInfo() {
 }
