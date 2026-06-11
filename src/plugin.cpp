@@ -1,7 +1,7 @@
 #include "plugin.h"
 
-void CutieVolumePlugin::registerTypes(const char *uri)
+void CutieSystemInfoPlugin::registerTypes(const char *uri)
 {
-	qmlRegisterSingletonType<CutieVolume>(uri, 1, 0, "CutieVolume",
-					      &CutieVolume::provider);
+	qmlRegisterSingletonType<CutieSystemInfo>(uri, 1, 0, "CutieSystemInfo",
+					      &CutieSystemInfo::provider);
 }

@@ -4,14 +4,14 @@
 #include <QtQml/qqml.h>
 #include <QtQml/QQmlExtensionPlugin>
 
-#include "cutievolume.h"
+#include "cutiesysteminfo.h"
 
-class CutieVolumePlugin : public QQmlExtensionPlugin {
+class CutieSystemInfoPlugin : public QQmlExtensionPlugin {
 	Q_OBJECT
 	Q_PLUGIN_METADATA(IID QQmlEngineExtensionInterface_iid FILE
-			  "cutievolume.json")
+			  "cutiesysteminfo.json")
     public:
-	explicit CutieVolumePlugin()
+	explicit CutieSystemInfoPlugin()
 	{
 	}
 

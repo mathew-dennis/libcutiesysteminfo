@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(cutievolume VERSION 0.1 LANGUAGES CXX)
+project(cutiesysteminfo VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -8,55 +8,55 @@ pkg_check_modules(LIBPULSE libpulse REQUIRED IMPORTED_TARGET)
 qt_standard_project_setup()
 
 set(lib_SOURCES
-    src/cutievolume.h
-    src/cutievolume.cpp)
+    src/cutiesysteminfo.h
+    src/cutiesysteminfo.cpp)
 
 set(plugin_SOURCES
     src/plugin.cpp src/plugin.h)
 
-qt6_add_library(cutievolume
+qt6_add_library(cutiesysteminfo
     SHARED ${lib_SOURCES}
 )
 
-qt6_add_qml_module(qmlcutievolumeplugin
+qt6_add_qml_module(qmlcutiesysteminfoplugin
     URI Cutie.Volume
     VERSION ${PROJECT_VERSION}
-    PLUGIN_TARGET qmlcutievolumeplugin
+    PLUGIN_TARGET qmlcutiesysteminfoplugin
     NO_GENERATE_PLUGIN_SOURCE
     SOURCES
         ${plugin_SOURCES}
 )
 
-set_target_properties(cutievolume PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(cutievolume PROPERTIES SOVERSION 0)
-set_target_properties(cutievolume PROPERTIES PUBLIC_HEADER src/cutievolume.h)
+set_target_properties(cutiesysteminfo PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(cutiesysteminfo PROPERTIES SOVERSION 0)
+set_target_properties(cutiesysteminfo PROPERTIES PUBLIC_HEADER src/cutiesysteminfo.h)
 
-target_link_libraries(cutievolume PUBLIC
+target_link_libraries(cutiesysteminfo PUBLIC
     Qt::Core
     Qt::Quick
     PkgConfig::LIBPULSE
 )
 
-target_link_libraries(qmlcutievolumeplugin PUBLIC
+target_link_libraries(qmlcutiesysteminfoplugin PUBLIC
     Qt::Core
     Qt::Quick
-    cutievolume
+    cutiesysteminfo
 )
 
-configure_file(src/cutievolume.pc.in cutievolume.pc @ONLY)
+configure_file(src/cutiesysteminfo.pc.in cutiesysteminfo.pc @ONLY)
 
-install(TARGETS cutievolume
+install(TARGETS cutiesysteminfo
     RUNTIME DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     BUNDLE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
-install(FILES ${CMAKE_BINARY_DIR}/cutievolume.pc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
+install(FILES ${CMAKE_BINARY_DIR}/cutisysteminfo.pc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
 
-install(TARGETS qmlcutievolumeplugin
-    RUNTIME DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie/Volume"
-    BUNDLE DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie/Volume"
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie/Volume"
+install(TARGETS qmlcutiesysteminfoplugin
+    RUNTIME DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie/SystemInfo"
+    BUNDLE DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie/SystemInfo"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie/SystemInfo"
 )
 
-install(DIRECTORY src/qml/Cutie/Volume DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie")
+install(DIRECTORY src/qml/Cutie/SystemInfo DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie")
