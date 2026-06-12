@@ -6,35 +6,59 @@
 #include <QStandardPaths>
 #include <QStorageInfo>
 
+// Helper function to extract individual properties from key-value system files cleanly
+QString getOsReleaseValue(const QString &filePath, const QString &key) {
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return "";
+    }
+
+    QString content = file.readAll();
+    file.close();
+
+    for (const QString &line : content.split('\n')) {
+        if (line.startsWith(key + "=")) {
+            QString val = line.mid(key.length() + 1).trimmed();
+            if (val.startsWith('"') && val.endsWith('"')) {
+                val = val.mid(1, val.length() - 2);
+            }
+            return val;
+        }
+    }
+    return "";
+}
+
 // ============================================================
 // CutieOSInfo Implementation
 // ============================================================
 
 CutieOSInfo::CutieOSInfo(QObject *parent)
     : QObject(parent) {
-    m_osName = getOSName();
-    m_kernel = executeCommand("uname -r");
-    m_build = readFile("/etc/os-release");
-    m_channel = readFile("/etc/lsb-release-codename").trimmed();
-}
+    
+    // Fix: Targets PRETTY_NAME for a beautiful OS label output
+    m_osName = getOsReleaseValue("/etc/os-release", "PRETTY_NAME");
+    if (m_osName.isEmpty()) {
+        m_osName = getOsReleaseValue("/etc/os-release", "NAME");
+    }
+    if (m_osName.isEmpty()) {
+        m_osName = "Linux";
+    }
 
-QString CutieOSInfo::getOSName() {
-    QString osRelease = readFile("/etc/os-release");
-    
-    for (const QString &line : osRelease.split('\n')) {
-        if (line.startsWith("NAME=")) {
-            return line.mid(6).remove('"');
-        }
+    m_kernel = executeCommand("uname -r");
+
+    // Fix: Stopped reading whole file, extracts target version/build numbers gracefully
+    m_build = getOsReleaseValue("/etc/os-release", "VERSION_ID");
+    if (m_build.isEmpty()) {
+        m_build = getOsReleaseValue("/etc/os-release", "BUILD_ID");
     }
-    
-    QString lsbRelease = readFile("/etc/lsb-release");
-    for (const QString &line : lsbRelease.split('\n')) {
-        if (line.startsWith("DISTRIB_DESCRIPTION=")) {
-            return line.mid(20).remove('"');
-        }
+    if (m_build.isEmpty()) {
+        m_build = "1.0";
     }
-    
-    return "Linux";
+
+    m_channel = readFile("/etc/lsb-release-codename").trimmed();
+    if (m_channel == "Unknown" || m_channel.isEmpty()) {
+        m_channel = getOsReleaseValue("/etc/os-release", "VERSION_CODENAME");
+    }
 }
 
 QString CutieOSInfo::readFile(const QString &filePath) {
@@ -76,22 +100,32 @@ CutieHardwareInfo::CutieHardwareInfo(QObject *parent)
 QString CutieHardwareInfo::getDeviceName() {
     QString deviceName = executeCommand("cat /sys/firmware/devicetree/base/model 2>/dev/null");
     
+    // Remove null bytes introduced by direct sysfs kernel file reading
+    deviceName.remove(QChar('\0')); 
+    
     if (deviceName.isEmpty() || deviceName == "Unknown") {
         deviceName = executeCommand("cat /sys/class/dmi/id/product_name 2>/dev/null");
+        deviceName.remove(QChar('\0'));
     }
     
     if (deviceName.isEmpty()) {
         deviceName = "Generic Device";
     }
     
-    return deviceName;
+    // Fix: Strips ugly trailing text variants like (board-id...) and bracket artifacts
+    if (deviceName.contains("(")) {
+        deviceName = deviceName.left(deviceName.indexOf("(")).trimmed();
+    }
+    deviceName.remove('[').remove(']');
+    
+    return deviceName.trimmed();
 }
 
 QString CutieHardwareInfo::getProcessorName() {
     QString cpuInfo = readFile("/proc/cpuinfo");
     
     for (const QString &line : cpuInfo.split('\n')) {
-        if (line.startsWith("model name")) {
+        if (line.startsWith("model name") || line.startsWith("Processor")) {
             QString modelName = line.split(':')[1].trimmed();
             
             modelName = modelName.replace("(R)", "").replace("(TM)", "")
@@ -105,7 +139,11 @@ QString CutieHardwareInfo::getProcessorName() {
         }
     }
     
-    return "Unknown";
+    // Fallback path for specific mobile ARM platforms missing model names in cpuinfo
+    QString hardwareName = getOsReleaseValue("/proc/cpuinfo", "Hardware");
+    if (!hardwareName.isEmpty()) return hardwareName;
+    
+    return "ARM Processor";
 }
 
 QString CutieHardwareInfo::getTotalMemory() {
@@ -173,6 +211,12 @@ QString CutieHardwareInfo::getBatteryInfo() {
         if (ok) {
             return QString::number(percentage) + "%";
         }
+    }
+    
+    // Look for generic mobile power supply nodes if standard laptop batteries aren't found
+    QString batteryCapacity = readFile("/sys/class/power_supply/battery/capacity");
+    if (batteryCapacity != "Unknown") {
+        return batteryCapacity + "%";
     }
     
     return "N/A";

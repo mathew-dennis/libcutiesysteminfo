@@ -52,9 +52,9 @@ install(TARGETS cutiesysteminfo
 install(FILES ${CMAKE_BINARY_DIR}/cutiesysteminfo.pc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig)
 
 install(TARGETS qmlcutiesysteminfoplugin
-    RUNTIME DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie/SystemInfo"
-    BUNDLE DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie/SystemInfo"
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie/SystemInfo"
+    RUNTIME DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie/Systeminfo"
+    BUNDLE DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie/Systeminfo"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie/Systeminfo"
 )
 
-install(DIRECTORY src/qml/Cutie/SystemInfo DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie")
+install(DIRECTORY src/qml/Cutie/Systeminfo DESTINATION "${CMAKE_INSTALL_LIBDIR}/qt6/qml/Cutie")
